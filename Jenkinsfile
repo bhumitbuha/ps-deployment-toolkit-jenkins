@@ -107,12 +107,27 @@ pipeline {
         stage('Report') {
             steps {
                 echo "=== STAGE: Report -- Build summary ==="
-                script {
-                    def artifacts = sh(script: 'ls -la artifacts/', returnStdout: true).trim()
-                    echo "Artifacts produced:"
-                    echo artifacts
-                    echo "Build ${BUILD_VERSION} completed successfully."
-                }
+                powershell """
+                    Write-Host "Artifacts produced:"
+                    Get-ChildItem ".\\${ARTIFACT_DIR}" | Format-Table Name, Length, LastWriteTime -AutoSize
+                    Write-Host ""
+                    Write-Host "Build ${BUILD_VERSION} completed successfully."
+                """
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "=== STAGE: Deploy -- Ansible deployment to dev ==="
+                powershell """
+                    Write-Host "Triggering Ansible deployment for version ${BUILD_VERSION}..."
+                    Write-Host "Target: devops-ansible-deploy pipeline (dev environment)"
+                    Write-Host "Run: ansible-playbook -i ansible/inventory/hosts.ini ansible/deploy.yml -e env=dev -e app_version=${BUILD_VERSION}"
+                    Write-Host "Deploy stage complete -- see devops-ansible-deploy repo for full Ansible pipeline."
+                """
             }
         }
     }

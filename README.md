@@ -74,8 +74,8 @@ ps-deployment-toolkit/
 ### 1. Clone and start Jenkins
 
 ```bash
-git clone https://github.com/YOURUSERNAME/ps-deployment-toolkit.git
-cd ps-deployment-toolkit
+git clone https://github.com/bhumitbuha/ps-deployment-toolkit-jenkins.git
+cd ps-deployment-toolkit-jenkins
 docker compose up -d
 ```
 
@@ -170,6 +170,16 @@ main        ← stable, tagged releases
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit message format, and PR checklist.
+
+---
+
+## Related Project
+
+The **Deploy** stage of this pipeline is designed to trigger the companion Ansible deployment pipeline:
+
+- **[devops-ansible-deploy](https://github.com/bhumitbuha/devops-ansible-deploy)** — Ansible role-based deployment pipeline that builds the Docker image, manages container lifecycle, and validates health endpoints.
+
+Together these two repos demonstrate a full CI/CD pipeline: Jenkins handles build/test/package; Ansible handles deploy/verify/rollback.
 
 ---
 
