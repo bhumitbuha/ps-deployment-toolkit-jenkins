@@ -1,0 +1,38 @@
+# Build artifacts
+artifacts/*.zip
+artifacts/*.log
+artifacts/*.json
+!artifacts/.gitkeep
+
+# PowerShell temp files
+*.ps1xml
+*.psd1.bak
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Docker
+docker-compose.override.yml
+
+# Jenkins
+.jenkins/
+
+# Claude Code
+.claude/settings.local.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
