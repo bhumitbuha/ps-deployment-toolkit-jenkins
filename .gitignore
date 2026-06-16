@@ -27,9 +27,6 @@ docker-compose.override.yml
 # Jenkins
 .jenkins/
 
-# Claude Code
-.claude/settings.local.json
-
 # Logs
 *.log
 logs/
