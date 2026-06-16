@@ -1,6 +1,6 @@
 # Local Setup Guide
 
-Complete walkthrough to get Jenkins running locally and executing the pipeline end-to-end.
+A full walkthrough to get Jenkins running locally and executing the pipeline end-to-end.
 
 ---
 
@@ -12,11 +12,11 @@ Complete walkthrough to get Jenkins running locally and executing the pipeline e
 | PowerShell | 7+ | `pwsh --version` |
 | Git | Any | `git --version` |
 
-Docker Desktop must be **running** before proceeding (check the system tray icon).
+Make sure Docker Desktop is **running** before you start (check the system tray icon).
 
 ---
 
-## Step 1 — Clone the repo
+## Step 1: Clone the repo
 
 ```bash
 git clone https://github.com/YOURUSERNAME/ps-deployment-toolkit.git
@@ -25,7 +25,7 @@ cd ps-deployment-toolkit
 
 ---
 
-## Step 2 — Start Jenkins in Docker
+## Step 2: Start Jenkins in Docker
 
 ```bash
 docker compose up -d
@@ -39,15 +39,15 @@ Verify the container is running:
 docker ps
 ```
 
-Expected output includes a row with `jenkins-ci` and `Up`.
+You should see a row with `jenkins-ci` and `Up`.
 
-Wait about 60 seconds for Jenkins to finish its initial boot.
+Give Jenkins about 60 seconds to finish its initial boot.
 
 ---
 
-## Step 3 — Unlock Jenkins
+## Step 3: Unlock Jenkins
 
-Get the one-time admin password:
+Grab the one-time admin password:
 ```bash
 docker exec jenkins-ci cat /var/jenkins_home/secrets/initialAdminPassword
 ```
@@ -56,26 +56,26 @@ Open **http://localhost:8080** in your browser, paste the password, and click Co
 
 ---
 
-## Step 4 — Install plugins
+## Step 4: Install plugins
 
-- Select **Install suggested plugins** and wait (~5 minutes)
-- After installation completes, create your admin account
+- Select **Install suggested plugins** and wait (about 5 minutes)
+- Once installation finishes, create your admin account
 - Keep the Jenkins URL as `http://localhost:8080`
-- Click **Save and Finish** → **Start using Jenkins**
+- Click **Save and Finish**, then **Start using Jenkins**
 
 Then install the PowerShell plugin:
-- **Manage Jenkins** → **Plugins** → **Available plugins**
+- **Manage Jenkins** > **Plugins** > **Available plugins**
 - Search: `PowerShell`
-- Check **PowerShell Plugin** → **Install**
-- Allow Jenkins to restart
+- Check **PowerShell Plugin**, then **Install**
+- Let Jenkins restart
 
 ---
 
-## Step 5 — Create the pipeline job
+## Step 5: Create the pipeline job
 
-1. Jenkins dashboard → **New Item**
+1. Jenkins dashboard > **New Item**
 2. Name: `ps-deployment-toolkit`
-3. Select **Pipeline** → **OK**
+3. Select **Pipeline**, then **OK**
 4. Under **Pipeline** section:
    - Definition: `Pipeline script from SCM`
    - SCM: `Git`
@@ -86,21 +86,21 @@ Then install the PowerShell plugin:
 
 ---
 
-## Step 6 — Run the pipeline
+## Step 6: Run the pipeline
 
 Click **Build Now**.
 
-The Stage View will show each stage lighting up in sequence:
+The Stage View will light up each stage in sequence:
 
 ```
-Checkout → Validate → Build → [Test: Deploy | Test: Baseline] → Package → Report
+Checkout > Validate > Build > [Test: Deploy | Test: Baseline] > Package > Report
 ```
 
-All stages green = success. Click any stage box to view its console output.
+All stages green means success. Click any stage box to view its console output.
 
 ---
 
-## Step 7 — View artifacts
+## Step 7: View artifacts
 
 After a successful build:
 - Click the build number (e.g., `#1`) in the left sidebar
@@ -115,7 +115,7 @@ After a successful build:
 docker compose down
 ```
 
-Data persists in the `jenkins_home` Docker volume. To fully reset:
+Data persists in the `jenkins_home` Docker volume. To wipe everything and start fresh:
 ```bash
 docker compose down -v
 ```
@@ -136,4 +136,4 @@ Then access Jenkins at http://localhost:8090.
 The Jenkins container runs Linux. Install PowerShell in the container or use a custom Docker agent image with PowerShell pre-installed. See `docs/pipeline-stages.md` for the agent image approach.
 
 **Build fails at Package stage on Windows Jenkins agent**
-The `Compress-Archive` path resolution differs on Windows vs Linux. Ensure Jenkins agent OS matches the path syntax in the Jenkinsfile `powershell` blocks.
+The `Compress-Archive` path resolution differs on Windows vs Linux. Make sure the Jenkins agent OS matches the path syntax in the Jenkinsfile `powershell` blocks.

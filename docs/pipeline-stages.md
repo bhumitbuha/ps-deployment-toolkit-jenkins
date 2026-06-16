@@ -1,6 +1,6 @@
 # Pipeline Stages Reference
 
-Detailed breakdown of every stage in the `Jenkinsfile`.
+A detailed breakdown of every stage in the `Jenkinsfile`.
 
 ---
 
@@ -46,7 +46,7 @@ Detailed breakdown of every stage in the `Jenkinsfile`.
 **Purpose:** Pull the latest source from the configured SCM branch.
 
 **Key behavior:**
-- `checkout scm` uses the pipeline job's SCM configuration — no hardcoded repo URL in the Jenkinsfile
+- `checkout scm` uses the pipeline job's SCM configuration, so there's no hardcoded repo URL in the Jenkinsfile
 - Logs the Git branch and computed build version (`1.0.<BUILD_NUMBER>`)
 
 **Fails if:** SCM is unreachable or credentials are missing.
@@ -63,7 +63,7 @@ Detailed breakdown of every stage in the `Jenkinsfile`.
 - `tests/Test-Deploy.ps1` exists
 - `tests/Test-Baseline.ps1` exists
 
-**Fails if:** Any file is missing — pipeline aborts immediately with a clear error message.
+**Fails if:** Any file is missing. The pipeline aborts immediately with a clear error message.
 
 **Why validate before build:** Catches broken merges (e.g., accidental file deletion) before the slower build/test stages run.
 
@@ -74,8 +74,8 @@ Detailed breakdown of every stage in the `Jenkinsfile`.
 **Purpose:** Execute the source scripts to produce build-time artifacts.
 
 **Produces:**
-- `artifacts/baseline-dev.json` — Dev environment baseline config
-- `artifacts/baseline-staging.json` — Staging environment baseline config
+- `artifacts/baseline-dev.json`: Dev environment baseline config
+- `artifacts/baseline-staging.json`: Staging environment baseline config
 
 **How it works:** Calls `Set-Baseline.ps1` twice with different `-Environment` values. The script generates JSON with environment-specific settings (firewall rules, log retention days, auto-update flag).
 
@@ -125,7 +125,7 @@ Runs `tests/Test-Baseline.ps1` which executes 5 assertions:
 
 **Contains:** All files from `src/` and `artifacts/` (baselines, logs).
 
-**Why version the package:** Enables artifact traceability — each build produces a uniquely named ZIP that can be pinned and rolled back to.
+**Why version the package:** Each build produces a uniquely named ZIP that can be pinned and rolled back to, so you get artifact traceability.
 
 ---
 
@@ -141,7 +141,7 @@ Runs `tests/Test-Baseline.ps1` which executes 5 assertions:
 
 | Condition | Action |
 |---|---|
-| `success` | `archiveArtifacts artifacts: 'artifacts/**/*'` — stores all artifacts in Jenkins |
+| `success` | `archiveArtifacts artifacts: 'artifacts/**/*'` stores all artifacts in Jenkins |
 | `failure` | Logs a failure message with a pointer to check stage logs |
 | `always` | Logs the final build result regardless of outcome |
 

@@ -1,27 +1,23 @@
 # ps-deployment-toolkit
 
-A multi-stage Jenkins CI pipeline that automates build, test, and packaging for a PowerShell infrastructure tooling project. Jenkins runs in Docker; the pipeline is defined entirely in a Groovy `Jenkinsfile`.
-
----
+A Jenkins CI pipeline for a small PowerShell tooling project. Jenkins runs in Docker and the whole pipeline lives in a Groovy `Jenkinsfile`.
 
 ## Pipeline Overview
 
 ```
-Checkout → Validate → Build → Test (parallel) → Package → Report
+Checkout > Validate > Build > Test (parallel) > Package > Report
 ```
 
 | Stage | What happens |
 |---|---|
-| **Checkout** | Pulls source from GitHub via SCM |
-| **Validate** | Asserts all required files exist before building |
-| **Build** | Runs `Set-Baseline.ps1` to generate Dev and Staging config artifacts |
-| **Test** | Runs `Test-Deploy.ps1` and `Test-Baseline.ps1` in parallel |
-| **Package** | Zips source + artifacts into a versioned bundle |
-| **Report** | Prints artifact listing and build summary |
+| Checkout | Pulls source from GitHub via SCM |
+| Validate | Asserts all required files exist before building |
+| Build | Runs `Set-Baseline.ps1` to generate Dev and Staging config artifacts |
+| Test | Runs `Test-Deploy.ps1` and `Test-Baseline.ps1` in parallel |
+| Package | Zips source plus artifacts into a versioned bundle |
+| Report | Prints artifact listing and build summary |
 
-On success, all artifacts are archived and fingerprinted in Jenkins.
-
----
+When the build passes, the artifacts get archived and fingerprinted in Jenkins.
 
 ## Project Structure
 
@@ -33,43 +29,30 @@ ps-deployment-toolkit/
 │       ├── bug_report.md
 │       └── feature_request.md
 ├── docs/
-│   ├── setup-guide.md          # Full local setup walkthrough
-│   └── pipeline-stages.md      # Stage-by-stage pipeline reference
+│   ├── setup-guide.md
+│   └── pipeline-stages.md
 ├── src/
-│   ├── Deploy-Endpoint.ps1     # 4-stage deployment script with JSON log output
-│   └── Set-Baseline.ps1        # Environment-specific baseline config generator
+│   ├── Deploy-Endpoint.ps1
+│   └── Set-Baseline.ps1
 ├── tests/
-│   ├── Test-Deploy.ps1         # 7-test assertion suite
-│   └── Test-Baseline.ps1       # 5-test assertion suite
-├── artifacts/                  # Jenkins writes build outputs here (gitignored)
+│   ├── Test-Deploy.ps1
+│   └── Test-Baseline.ps1
+├── artifacts/
 ├── .gitignore
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
-├── Jenkinsfile                 # Groovy declarative pipeline
-├── docker-compose.yml          # Jenkins LTS in Docker on port 8080
+├── Jenkinsfile
+├── docker-compose.yml
 └── README.md
 ```
 
----
-
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| CI Server | Jenkins LTS (Groovy declarative pipeline) |
-| Container | Docker / Docker Compose |
-| Scripting | PowerShell 7+ |
-| SCM | Git / GitHub |
-
----
+Jenkins LTS (Groovy declarative pipeline), Docker and Docker Compose, PowerShell 7+, Git/GitHub.
 
 ## Quick Start
 
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
-- [PowerShell 7+](https://github.com/PowerShell/PowerShell) (`pwsh`)
-- Git
+You'll need Docker Desktop running, PowerShell 7 or higher (`pwsh`), and Git.
 
 ### 1. Clone and start Jenkins
 
@@ -79,7 +62,7 @@ cd ps-deployment-toolkit-jenkins
 docker compose up -d
 ```
 
-Wait ~60 seconds, then open **http://localhost:8080**.
+Give it about a minute, then open http://localhost:8080.
 
 ### 2. Unlock Jenkins
 
@@ -87,97 +70,84 @@ Wait ~60 seconds, then open **http://localhost:8080**.
 docker exec jenkins-ci cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
-Paste the password into the browser UI.
+Paste that into the browser.
 
 ### 3. Install plugins
 
-- Choose **Install suggested plugins**
-- After setup, go to **Manage Jenkins → Plugins → Available**
-- Search and install: **PowerShell Plugin**
-- Restart Jenkins
+Choose **Install suggested plugins**. After setup finishes, go to **Manage Jenkins > Plugins > Available** and install the **PowerShell Plugin**, then restart Jenkins.
 
 ### 4. Create the pipeline job
 
-- **New Item** → name it `ps-deployment-toolkit` → choose **Pipeline** → OK
-- Under Pipeline:
-  - Definition: `Pipeline script from SCM`
-  - SCM: `Git`
-  - Repository URL: your GitHub repo URL
-  - Branch: `*/main`
-  - Script Path: `Jenkinsfile`
-- **Save** → **Build Now**
+**New Item**, name it `ps-deployment-toolkit`, pick **Pipeline**, OK. Under Pipeline:
 
-See [docs/setup-guide.md](docs/setup-guide.md) for the full walkthrough.
+- Definition: Pipeline script from SCM
+- SCM: Git
+- Repository URL: your GitHub repo URL
+- Branch: `*/main`
+- Script Path: `Jenkinsfile`
 
----
+Save, then click **Build Now**.
+
+The full walkthrough lives in [docs/setup-guide.md](docs/setup-guide.md).
 
 ## Source Scripts
 
 ### `src/Deploy-Endpoint.ps1`
 
-Simulates deploying a baseline configuration to a named endpoint. Runs four internal stages (validate baseline, validate params, apply config, write log) and exits 0 on success or 1 on failure.
+Simulates deploying a baseline configuration to a named endpoint. It runs four stages (validate baseline, validate params, apply config, write log) and exits 0 on success or 1 on failure.
 
 ```powershell
-# Usage
 .\src\Deploy-Endpoint.ps1 -ComputerName "WORKSTATION-01" -BaselinePath ".\artifacts\baseline-dev.json"
 ```
 
-**Output:** Structured JSON log written to `artifacts/deploy.log`.
+Output is a structured JSON log written to `artifacts/deploy.log`.
 
 ### `src/Set-Baseline.ps1`
 
 Generates a JSON baseline configuration file for a target environment.
 
 ```powershell
-# Usage
 .\src\Set-Baseline.ps1 -OutputPath ".\artifacts\baseline-prod.json" -Environment Prod
 ```
 
-**Environments:** `Dev` (7-day log retention), `Staging` (30-day), `Prod` (90-day, auto-update on).
-
----
+Environments are `Dev` (7-day log retention), `Staging` (30-day), and `Prod` (90-day, auto-update on).
 
 ## Tests
 
-Tests use a custom assertion pattern (no external framework required).
+The tests use a custom assertion pattern, so there's no external framework to install.
 
 ```powershell
-# Run locally
 pwsh tests/Test-Deploy.ps1
 pwsh tests/Test-Baseline.ps1
 ```
 
-| Suite | Tests | What it covers |
+| Suite | Tests | Covers |
 |---|---|---|
 | Test-Deploy.ps1 | 7 | File existence, param block, mandatory params, exit code, stage logging, log writing, live execution |
 | Test-Baseline.ps1 | 5 | File existence, output creation, valid JSON, environment field, log retention value |
 
-Both suites exit 0 on full pass, 1 on any failure. The Jenkins pipeline fails the build if either suite returns non-zero.
-
----
+Both exit 0 on a clean pass and 1 if anything fails. The Jenkins pipeline fails the build if either suite returns non-zero.
 
 ## Git Flow
 
-This project uses [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/).
+This project follows [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/).
 
 ```
-main        ← stable, tagged releases
-  └── develop ← integration
-        ├── feature/*   ← new work
-        ├── bugfix/*    ← fixes
-        ├── release/*   ← release prep
-        └── hotfix/*    ← emergency patches on main
+main        (stable, tagged releases)
+  └── develop (integration)
+        ├── feature/*   (new work)
+        ├── bugfix/*    (fixes)
+        ├── release/*   (release prep)
+        └── hotfix/*    (emergency patches on main)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit message format, and PR checklist.
-
----
+Branch naming, commit format, and the PR checklist live in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Related Project
 
 The **Deploy** stage of this pipeline is designed to trigger the companion Ansible deployment pipeline:
 
-- **[devops-ansible-deploy](https://github.com/bhumitbuha/devops-ansible-deploy)** — Ansible role-based deployment pipeline that builds the Docker image, manages container lifecycle, and validates health endpoints.
+- **[devops-ansible-deploy](https://github.com/bhumitbuha/devops-ansible-deploy)**: Ansible role-based deployment pipeline that builds the Docker image, manages container lifecycle, and validates health endpoints.
 
 Together these two repos demonstrate a full CI/CD pipeline: Jenkins handles build/test/package; Ansible handles deploy/verify/rollback.
 
@@ -186,8 +156,6 @@ Together these two repos demonstrate a full CI/CD pipeline: Jenkins handles buil
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
-
----
 
 ## License
 

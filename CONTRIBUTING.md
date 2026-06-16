@@ -76,7 +76,7 @@ git branch -d hotfix/fix-description
 ```
 <type>(<scope>): <short summary>
 
-[optional body — explain WHY not WHAT]
+[optional body: explain WHY not WHAT]
 ```
 
 **Types:** `feat`, `fix`, `test`, `docs`, `ci`, `refactor`, `chore`
